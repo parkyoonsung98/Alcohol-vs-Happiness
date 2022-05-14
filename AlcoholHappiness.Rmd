@@ -1,0 +1,180 @@
+---
+title: "Alochol vs. Happiness"
+author: "Yoonsung Park"
+output: html_notebook
+---
+
+
+
+
+```{r}
+library(tidyverse)
+library(mosaic)
+```
+
+```{r}
+happinessCSV <- read.csv(file = 'output.csv', header=TRUE, fill = T, na.strings = "")
+alcoholCSV <- read.csv(file = 'alcohol-consumption-vs-gdp-per-capita.csv')
+```
+
+```{r}
+head(happinessCSV)
+head(alcoholCSV)
+```
+
+## DATA CLEANING
+
+
+
+```{r}
+#happiness data have multiple data combined by each years, so group by each countries and take mean of 2015-2022
+happinessCSV %>% 
+  group_by(Country) %>%
+  summarise(mean(Happiness.Score.1, na.rm=TRUE))
+happinessCSV %>% 
+  group_by(Country) %>%
+  summarise(mean(Happiness.Score, na.rm=TRUE))
+happinessCSV %>% 
+  group_by(Country) %>%
+  summarise(mean(Score, na.rm=TRUE))
+happinessCSV %>% 
+  group_by(Country) %>%
+  filter(year == 2022) %>%
+  summarise(mean(Happiness.score, na.rm=TRUE))
+```
+
+
+```{r}
+#getting error in Happiness.score column bc there is comma instead period, removing comma and converting data type.
+happinessCSV$Happiness.score <- as.numeric(gsub(",",".",happinessCSV$Happiness.score))
+happinessCSV %>% 
+  filter(year == 2022)
+```
+
+```{r}
+#calculate mean value of happiness on corresponding feature and save them as subset dataframe + realized there were more different features for country and happiness
+y2015_2016 <-
+  happinessCSV %>% 
+  group_by(Country) %>%
+  summarise(happiness_mean = mean(Happiness.Score.1, na.rm=TRUE))
+y2017 <-
+  happinessCSV %>% 
+  group_by(Country) %>%
+  summarise(happiness_mean = mean(Happiness.Score, na.rm=TRUE))
+y2018_2019 <- 
+  happinessCSV %>% 
+  group_by(Country = Country.or.region) %>%
+  summarise(happiness_mean = mean(Score, na.rm=TRUE))
+y2020_2021 <- 
+  happinessCSV %>% 
+  group_by(Country = Country.name) %>%
+  summarise(happiness_mean = mean(Ladder.score, na.rm=TRUE))
+y2022 <-
+  happinessCSV %>% 
+  group_by(Country) %>%
+  summarise(happiness_mean = mean(Happiness.score, na.rm=TRUE))
+```
+
+
+```{r}
+#combined the subset data
+ycombined <- rbind(y2015_2016, y2017, y2018_2019, y2020_2021, y2022)
+ycombined <- 
+  ycombined %>%
+  group_by(Country) %>%
+  summarise(happiness = mean(happiness_mean, na.rm=TRUE))
+ycombined
+```
+
+
+```{r}
+ycombined %>%
+  filter(Country == "Lesotho" | Country == "Lesotho*")
+#there are multiple variation in names in same country
+```
+
+
+```{R}
+#find list of countries that have *
+ycombined %>% 
+  filter(grepl("\\*", Country, ignore.case = TRUE)) 
+```
+
+
+```{r}
+#create for loop through country and remove * character
+for(i in 1:length(ycombined$Country)){
+  ycombined$Country[i] <- gsub('\\*', '', ycombined$Country[i])
+}
+```
+
+
+```{R}
+#check if they are removed
+ycombined %>% 
+  filter(grepl("\\*", Country, ignore.case = TRUE)) 
+```
+
+
+```{r}
+#calculate mean value again
+ycombined <- 
+  ycombined %>%
+  group_by(Country) %>%
+  summarise(happiness = mean(happiness, na.rm=TRUE))
+ycombined
+```
+
+
+```{r}
+#Data cleaning for alcohol data
+alcohol <-
+  alcoholCSV %>%
+  group_by(Country = Entity) %>% 
+  summarise(alcohol = mean(Total.alcohol.consumption.per.capita..liters.of.pure.alcohol..projected.estimates..15..years.of.age., na.rm=TRUE))
+alcohol
+```
+
+
+```{r}
+#Combined happiness and alocohol data
+combined <-
+  ycombined %>%
+  inner_join(alcohol)
+combined
+```
+
+## Data Visualization
+
+```{r}
+#linear regression
+ggplot(data = combined, aes(x = alcohol, y = happiness)) + 
+  geom_point() + 
+  stat_smooth(method = lm) + 
+  labs(title = "")
+
+#smooth regression
+ggplot(data = combined, aes(x = alcohol, y = happiness)) + 
+  geom_point() + 
+  stat_smooth(method = loess) + 
+  labs(title = "")
+```
+
+seems like there is positive correlation between alcohol and happiness
+
+
+```{r}
+#see which countries have highest/lowest happiness and alochol level
+combined %>%
+  arrange(desc(happiness))
+
+combined %>%
+  arrange(desc(alcohol))
+
+combined %>%
+  arrange(happiness)
+
+combined %>%
+  arrange(alcohol)
+```
+
