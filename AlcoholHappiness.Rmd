@@ -160,7 +160,7 @@ ggplot(data = combined, aes(x = alcohol, y = happiness)) +
   labs(title = "")
 ```
 
-seems like there is positive correlation between alcohol and happiness
+So, based on the graph we created for the combined table, shows that alcohol consumption does have a positive correlation with happiness scores. When alcohol consumption in a country is high, the happiness score seems to be higher, when alcohol consumption is low in a country the happiness score seems to be low as well. However, the correlation seems to be less obvious as alcohol consumption goes over 12 alcohol level on smooth regression.
 
 
 ```{r}
@@ -178,3 +178,4 @@ combined %>%
   arrange(alcohol)
 ```
 
+By looking at the countries that have the highest/lowest happiness and alcohol level data table, we can clearly see there is some difference in happiness between lowest alcohol consumption versus highest. It is important to realize this is not a cause and effect relation but only a correlation. To go on further, the cause for correlation might be lower alcohol consumption countries have tighter regulations which possibly can have negative affect on general happiness. If we look at the countries that have low alcohol consumption, some of the countries have war going on and have religious or government regulation on alcohol. On the other hand, Nordic countries are known for being happy and their alcohol culture, affecting the correlation greatly.
