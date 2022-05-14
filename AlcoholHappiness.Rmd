@@ -52,7 +52,8 @@ happinessCSV %>%
 ```
 
 ```{r}
-#calculate mean value of happiness on corresponding feature and save them as subset dataframe + realized there were more different features for country and happiness
+#calculate mean value of happiness on corresponding feature and save them as subset dataframe + 
+#realized there were more different features for country and happiness
 y2015_2016 <-
   happinessCSV %>% 
   group_by(Country) %>%
